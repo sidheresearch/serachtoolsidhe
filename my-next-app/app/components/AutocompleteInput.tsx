@@ -19,7 +19,7 @@ interface AutocompleteInputProps {
   onChange: (values: string[]) => void;
   disabled?: boolean;
   icon?: React.ReactNode;
-  sx?: any;
+  sx?: Record<string, unknown>;
 }
 
 export const AutocompleteInput: React.FC<AutocompleteInputProps> = ({
@@ -40,11 +40,11 @@ export const AutocompleteInput: React.FC<AutocompleteInputProps> = ({
     minLength: 2
   });
 
-  const handleChange = (event: any, newValue: string[]) => {
+  const handleChange = (event: React.SyntheticEvent, newValue: string[]) => {
     onChange(newValue);
   };
 
-  const handleInputChange = (event: any, newInputValue: string) => {
+  const handleInputChange = (event: React.SyntheticEvent, newInputValue: string) => {
     setInputValue(newInputValue);
   };
 
@@ -63,6 +63,7 @@ export const AutocompleteInput: React.FC<AutocompleteInputProps> = ({
       renderTags={(tagValue, getTagProps) =>
         tagValue.map((option, index) => (
           <Chip
+            key={index}
             label={option.length > 50 ? `${option.substring(0, 50)}...` : option}
             {...getTagProps({ index })}
             size="small"

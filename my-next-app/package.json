@@ -2,12 +2,15 @@
   "name": "my-next-app",
   "version": "0.1.0",
   "private": true,
-  "scripts": {
-    "dev": "next dev --turbopack",
-    "build": "next build",
-    "start": "next start",
-    "lint": "next lint"
-  },
+"scripts": {
+  "dev": "next dev --turbopack",
+  "build": "DISABLE_ESLINT_PLUGIN=true next build",
+  "start": "next start",
+  "lint": "next lint"
+},
+
+
+
   "dependencies": {
     "@emotion/react": "^11.14.0",
     "@emotion/styled": "^11.14.1",

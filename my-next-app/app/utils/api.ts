@@ -1,5 +1,5 @@
 // app/utils/api.ts
-const API_BASE_URL = 'http://localhost:8000';
+const API_BASE_URL = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:8000';
 
 export interface SuggestionResponse {
   suggestions: string[];
@@ -18,7 +18,7 @@ export interface SearchFilters {
 }
 
 export interface SearchResponse {
-  data: any[];
+  data: Record<string, unknown>[];
   count: number;
   search_type: string;
   error?: string;

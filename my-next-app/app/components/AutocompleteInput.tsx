@@ -63,7 +63,6 @@ export const AutocompleteInput: React.FC<AutocompleteInputProps> = ({
       renderTags={(tagValue, getTagProps) =>
         tagValue.map((option, index) => (
           <Chip
-            key={index}
             label={option.length > 50 ? `${option.substring(0, 50)}...` : option}
             {...getTagProps({ index })}
             size="small"

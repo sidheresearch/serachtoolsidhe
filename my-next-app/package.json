@@ -2,15 +2,13 @@
   "name": "my-next-app",
   "version": "0.1.0",
   "private": true,
-"scripts": {
-  "dev": "next dev --turbopack",
-  "build": "DISABLE_ESLINT_PLUGIN=true next build",
-  "start": "next start",
-  "lint": "next lint"
-},
-
-
-
+  "scripts": {
+    "dev": "next dev --turbopack",
+    "build": "next build",
+    "build:prod": "cross-env NEXT_PUBLIC_API_URL=http://13.126.160.124:8000 NODE_ENV=production next build",
+    "start": "next start",
+    "lint": "next lint"
+  },
   "dependencies": {
     "@emotion/react": "^11.14.0",
     "@emotion/styled": "^11.14.1",
@@ -18,6 +16,7 @@
     "@mui/material": "^7.2.0",
     "@mui/x-date-pickers": "^8.8.0",
     "chart.js": "^4.5.0",
+    "cross-env": "^10.0.0",
     "dayjs": "^1.11.13",
     "next": "15.3.5",
     "react": "^19.0.0",

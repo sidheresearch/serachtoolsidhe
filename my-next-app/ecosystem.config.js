@@ -7,7 +7,7 @@ module.exports = {
     env: {
       NODE_ENV: 'production',
       PORT: 3000,
-      NEXT_PUBLIC_API_URL: '/api'
+      NEXT_PUBLIC_API_URL: 'http://13.126.160.124:8000'
     },
     log_file: '/home/ubuntu/logs/frontend.log',
     error_file: '/home/ubuntu/logs/frontend-error.log',

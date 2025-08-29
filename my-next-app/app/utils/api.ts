@@ -1,5 +1,5 @@
 // app/utils/api.ts
-const API_BASE_URL = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:8000';
+const API_BASE_URL = process.env.NEXT_PUBLIC_API_URL || 'http://13.126.160.124:8000';
 
 export interface SuggestionResponse {
   suggestions: string[];

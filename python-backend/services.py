@@ -347,18 +347,24 @@ def build_query_with_filters_dict(base_query: str, params: Dict, filters: Option
     
     # Date filters
     if filters.date_mode == "single" and filters.single_date:
+        print(f"DEBUG: Single date filter - {filters.single_date}")
         query += f" AND reg_date = :filter_param_{param_counter}"
-        params[f"filter_param_{param_counter}"] = filters.single_date
+        params[f"filter_param_{param_counter}"] = str(filters.single_date)
         param_counter += 1
     elif filters.date_mode == "range":
         if filters.start_date:
+            print(f"DEBUG: Start date filter - {filters.start_date}")
             query += f" AND reg_date >= :filter_param_{param_counter}"
-            params[f"filter_param_{param_counter}"] = filters.start_date
+            params[f"filter_param_{param_counter}"] = str(filters.start_date)
             param_counter += 1
         if filters.end_date:
+            print(f"DEBUG: End date filter - {filters.end_date}")
             query += f" AND reg_date <= :filter_param_{param_counter}"
-            params[f"filter_param_{param_counter}"] = filters.end_date
+            params[f"filter_param_{param_counter}"] = str(filters.end_date)
             param_counter += 1
+    
+    print(f"DEBUG: Final query - {query}")
+    print(f"DEBUG: Final params - {params}")
     
     query += " ORDER BY reg_date DESC LIMIT 1000"
     return query, params
@@ -461,8 +467,8 @@ def search_by_entities(entities: List[str], filters: Optional[SearchFilters] = N
                    indian_port, foreign_port, exchange_rate_usd, duty, 
                    product_name, supplier_name, supplier_address, target_date, id, importer
             FROM analytics.product_icegate_imports 
-            WHERE true_importer_name IN ({importer_placeholders}) 
-            OR true_supplier_name IN ({supplier_placeholders})
+            WHERE (true_importer_name IN ({importer_placeholders}) 
+            OR true_supplier_name IN ({supplier_placeholders}))
         """
         
         # Create parameters dictionary with different names for importers and suppliers

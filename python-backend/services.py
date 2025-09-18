@@ -212,7 +212,7 @@ def get_product_names():
             # Limit to 10,000 most common products for faster performance
             df = pd.read_sql(
                 """SELECT DISTINCT product_name 
-                   FROM analytics.product_icegate_imports 
+                   FROM analytics.product_icegate_imports_experiment 
                    WHERE product_name IS NOT NULL 
                    LIMIT 10000""",
                 engine
@@ -233,7 +233,7 @@ def get_unique_product_names():
         try:
             engine = get_engine()
             df = pd.read_sql(
-                "SELECT DISTINCT unique_product_name FROM analytics.product_icegate_imports WHERE unique_product_name IS NOT NULL",
+                "SELECT DISTINCT unique_product_name FROM analytics.product_icegate_imports_experiment WHERE unique_product_name IS NOT NULL",
                 engine
             )
             _unique_product_names_cache = df["unique_product_name"].tolist()
@@ -251,13 +251,13 @@ def get_entities():
             engine = get_engine()
             # Get ALL importers (no limit)
             importer_df = pd.read_sql(
-                "SELECT DISTINCT true_importer_name FROM analytics.product_icegate_imports WHERE true_importer_name IS NOT NULL",
+                "SELECT DISTINCT true_importer_name FROM analytics.product_icegate_imports_experiment WHERE true_importer_name IS NOT NULL",
                 engine
             )
             
             # Get ALL suppliers (no limit)
             supplier_df = pd.read_sql(
-                "SELECT DISTINCT true_supplier_name FROM analytics.product_icegate_imports WHERE true_supplier_name IS NOT NULL",
+                "SELECT DISTINCT true_supplier_name FROM analytics.product_icegate_imports_experiment WHERE true_supplier_name IS NOT NULL",
                 engine
             )
             
@@ -347,24 +347,18 @@ def build_query_with_filters_dict(base_query: str, params: Dict, filters: Option
     
     # Date filters
     if filters.date_mode == "single" and filters.single_date:
-        print(f"DEBUG: Single date filter - {filters.single_date}")
         query += f" AND reg_date = :filter_param_{param_counter}"
-        params[f"filter_param_{param_counter}"] = str(filters.single_date)
+        params[f"filter_param_{param_counter}"] = filters.single_date
         param_counter += 1
     elif filters.date_mode == "range":
         if filters.start_date:
-            print(f"DEBUG: Start date filter - {filters.start_date}")
             query += f" AND reg_date >= :filter_param_{param_counter}"
-            params[f"filter_param_{param_counter}"] = str(filters.start_date)
+            params[f"filter_param_{param_counter}"] = filters.start_date
             param_counter += 1
         if filters.end_date:
-            print(f"DEBUG: End date filter - {filters.end_date}")
             query += f" AND reg_date <= :filter_param_{param_counter}"
-            params[f"filter_param_{param_counter}"] = str(filters.end_date)
+            params[f"filter_param_{param_counter}"] = filters.end_date
             param_counter += 1
-    
-    print(f"DEBUG: Final query - {query}")
-    print(f"DEBUG: Final params - {params}")
     
     query += " ORDER BY reg_date DESC LIMIT 1000"
     return query, params
@@ -382,7 +376,7 @@ def search_by_product_names(product_names: List[str], filters: Optional[SearchFi
                    true_importer_name, city, cha_number, type, true_supplier_name, 
                    indian_port, foreign_port, exchange_rate_usd, duty, 
                    product_name, supplier_name, supplier_address, target_date, id, importer
-            FROM analytics.product_icegate_imports 
+            FROM analytics.product_icegate_imports_experiment 
             WHERE product_name IN ({placeholders})
         """
         
@@ -423,7 +417,7 @@ def search_by_unique_product_names(unique_product_names: List[str], filters: Opt
                    true_importer_name, city, cha_number, type, true_supplier_name, 
                    indian_port, foreign_port, exchange_rate_usd, duty, 
                    product_name, supplier_name, supplier_address, target_date, id, importer
-            FROM analytics.product_icegate_imports 
+            FROM analytics.product_icegate_imports_experiment 
             WHERE unique_product_name IN ({placeholders})
         """
         
@@ -466,9 +460,9 @@ def search_by_entities(entities: List[str], filters: Optional[SearchFilters] = N
                    true_importer_name, city, cha_number, type, true_supplier_name, 
                    indian_port, foreign_port, exchange_rate_usd, duty, 
                    product_name, supplier_name, supplier_address, target_date, id, importer
-            FROM analytics.product_icegate_imports 
-            WHERE (true_importer_name IN ({importer_placeholders}) 
-            OR true_supplier_name IN ({supplier_placeholders}))
+            FROM analytics.product_icegate_imports_experiment 
+            WHERE true_importer_name IN ({importer_placeholders}) 
+            OR true_supplier_name IN ({supplier_placeholders})
         """
         
         # Create parameters dictionary with different names for importers and suppliers
@@ -518,7 +512,7 @@ def get_top_importers_by_product(product_names: List[str], filters: Optional[Sea
                 MAX(reg_date) as last_import_date,
                 COUNT(DISTINCT hs_code) as unique_hs_codes,
                 COUNT(DISTINCT origin_country) as unique_countries
-            FROM analytics.product_icegate_imports 
+            FROM analytics.product_icegate_imports_experiment 
             WHERE product_name IN ({placeholders})
             AND true_importer_name IS NOT NULL
             AND total_value_usd IS NOT NULL
@@ -606,7 +600,7 @@ def get_top_importers_by_unique_product(unique_product_names: List[str], filters
                 MAX(reg_date) as last_import_date,
                 COUNT(DISTINCT hs_code) as unique_hs_codes,
                 COUNT(DISTINCT origin_country) as unique_countries
-            FROM analytics.product_icegate_imports 
+            FROM analytics.product_icegate_imports_experiment 
             WHERE unique_product_name IN ({placeholders})
             AND true_importer_name IS NOT NULL
             AND total_value_usd IS NOT NULL
@@ -691,7 +685,7 @@ def get_top_suppliers_by_product(product_names: List[str], filters: Optional[Sea
                 MAX(reg_date) as last_export_date,
                 COUNT(DISTINCT hs_code) as unique_hs_codes,
                 COUNT(DISTINCT true_importer_name) as unique_importers
-            FROM analytics.product_icegate_imports 
+            FROM analytics.product_icegate_imports_experiment 
             WHERE product_name IN ({placeholders})
             AND true_supplier_name IS NOT NULL
             AND total_value_usd IS NOT NULL
@@ -779,7 +773,7 @@ def get_top_suppliers_by_unique_product(unique_product_names: List[str], filters
                 MAX(reg_date) as last_export_date,
                 COUNT(DISTINCT hs_code) as unique_hs_codes,
                 COUNT(DISTINCT true_importer_name) as unique_importers
-            FROM analytics.product_icegate_imports 
+            FROM analytics.product_icegate_imports_experiment 
             WHERE unique_product_name IN ({placeholders})
             AND true_supplier_name IS NOT NULL
             AND total_value_usd IS NOT NULL

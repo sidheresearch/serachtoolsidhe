@@ -1,6 +1,8 @@
 # app.py
 from fastapi import FastAPI, HTTPException, Query
 from fastapi.middleware.cors import CORSMiddleware
+import logging
+from fastapi import FastAPI, HTTPException
 from models import ProductSearchRequest, UniqueProductSearchRequest, EntitySearchRequest
 from services import (
     get_fuzzy_suggestions,
@@ -14,6 +16,9 @@ from services import (
 )
 
 app = FastAPI(title="Trade Analytics API")
+logging.basicConfig(level=logging.INFO)
+logger = logging.getLogger("trade_analytics")
+
 
 app.add_middleware(
     CORSMiddleware,
@@ -60,14 +65,13 @@ def search_products(request: ProductSearchRequest):
 def search_unique_products(request: UniqueProductSearchRequest):
     """Search by unique product names"""
     try:
+        logger.info("API HIT: /api/search/unique-products | unique_product_names=%s | filters=%s", request.unique_product_names, request.filters)
         if not request.unique_product_names:
             raise HTTPException(status_code=400, detail="Unique product names cannot be empty")
-        
         result = search_by_unique_product_names(request.unique_product_names, request.filters)
         return result
     except Exception as e:
         raise HTTPException(status_code=500, detail=str(e))
-
 @app.post("/api/search/entities")
 def search_entities(request: EntitySearchRequest):
     """Search by entity names"""

@@ -212,7 +212,7 @@ def get_product_names():
             # Limit to 10,000 most common products for faster performance
             df = pd.read_sql(
                 """SELECT DISTINCT product_name 
-                   FROM analytics.product_icegate_imports 
+                   FROM analytics.product_icegate_imports_experiment 
                    WHERE product_name IS NOT NULL 
                    LIMIT 10000""",
                 engine
@@ -227,9 +227,11 @@ def get_product_names():
     return _product_names_cache
 
 def get_unique_product_names():
+    print("Testing...........")
     """Get all distinct unique product names"""
     global _unique_product_names_cache
     if _unique_product_names_cache is None:
+        print("Hello baby how are you")
         try:
             engine = get_engine()
             df = pd.read_sql(
@@ -404,7 +406,8 @@ def search_by_product_names(product_names: List[str], filters: Optional[SearchFi
             "error": str(e)
         }
 
-def search_by_unique_product_names(unique_product_names: List[str], filters: Optional[SearchFilters] = None) -> Dict[str, Any]:
+def search_by_unique_product_names(unique_product_names, filters):
+    print("Searching for:", unique_product_names, "with filters:", filters)
     """Search by unique product names - returns all columns"""
     try:
         engine = get_engine()
@@ -460,7 +463,7 @@ def search_by_entities(entities: List[str], filters: Optional[SearchFilters] = N
                    true_importer_name, city, cha_number, type, true_supplier_name, 
                    indian_port, foreign_port, exchange_rate_usd, duty, 
                    product_name, supplier_name, supplier_address, target_date, id, importer
-            FROM analytics.product_icegate_imports 
+            FROM analytics.product_icegate_imports_experiment 
             WHERE (true_importer_name IN ({importer_placeholders}) 
             OR true_supplier_name IN ({supplier_placeholders}))
         """

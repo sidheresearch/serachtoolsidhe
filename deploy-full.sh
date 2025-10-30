@@ -23,20 +23,6 @@ sudo npm install -g pm2
 
 echo "✅ System dependencies installed"
 
-# Clone or update repository
-cd /home/ubuntu
-if [ -d "serachtoolsidhe" ]; then
-    echo "📁 Repository exists, updating..."
-    cd serachtoolsidhe
-    git pull origin main
-else
-    echo "📁 Cloning repository..."
-    git clone https://github.com/sidheresearch/serachtoolsidhe.git
-    cd serachtoolsidhe
-fi
-
-echo "✅ Repository ready"
-
 # Setup Backend (Python FastAPI) - if not already running
 echo "🐍 Setting up Python backend..."
 cd python-backend
@@ -50,7 +36,7 @@ source venv/bin/activate
 pip install -r requirements.txt
 
 # Create systemd service for FastAPI backend
-sudo tee /etc/systemd/system/searchapi.service > /dev/null <<EOF
+sudo tee /etc/systemd/system/searchapi.service > /dev/null <<EOF2
 [Unit]
 Description=Search Tool FastAPI Backend
 After=network.target
@@ -66,7 +52,7 @@ RestartSec=10
 
 [Install]
 WantedBy=multi-user.target
-EOF
+EOF2
 
 # Enable and start backend service
 sudo systemctl daemon-reload
@@ -98,7 +84,7 @@ pm2 startup
 echo "✅ Frontend built and started with PM2"
 
 # Configure Nginx as reverse proxy
-sudo tee /etc/nginx/sites-available/searchtool > /dev/null <<EOF
+sudo tee /etc/nginx/sites-available/searchtool > /dev/null <<EOF2
 server {
     listen 80;
     server_name _;
@@ -132,7 +118,7 @@ server {
         add_header 'Access-Control-Expose-Headers' 'Content-Length,Content-Range' always;
     }
 }
-EOF
+EOF2
 
 # Enable the site
 sudo ln -sf /etc/nginx/sites-available/searchtool /etc/nginx/sites-enabled/
@@ -168,8 +154,3 @@ echo "🔍 To check logs:"
 echo "   Backend logs: sudo journalctl -u searchapi -f"
 echo "   Frontend logs: pm2 logs search-frontend"
 echo "   Nginx logs: sudo tail -f /var/log/nginx/access.log"
-echo ""
-echo "🔄 To restart services:"
-echo "   Backend: sudo systemctl restart searchapi"
-echo "   Frontend: pm2 restart search-frontend"
-echo "   Nginx: sudo systemctl restart nginx"

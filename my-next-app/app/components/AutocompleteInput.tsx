@@ -14,7 +14,7 @@ import { useDebouncedSuggestions } from '../hooks/useDebouncedSuggestions';
 interface AutocompleteInputProps {
   label: string;
   placeholder: string;
-  searchType: 'product_name' | 'unique_product_name' | 'entity';
+  searchType: 'product_name' | 'unique_product_name' | 'entity' | 'hs_code';
   value: string[];
   onChange: (values: string[]) => void;
   disabled?: boolean;

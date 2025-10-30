@@ -3,12 +3,13 @@ from fastapi import FastAPI, HTTPException, Query
 from fastapi.middleware.cors import CORSMiddleware
 import logging
 from fastapi import FastAPI, HTTPException
-from models import ProductSearchRequest, UniqueProductSearchRequest, EntitySearchRequest
+from models import ProductSearchRequest, UniqueProductSearchRequest, EntitySearchRequest, HSCodeSearchRequest
 from services import (
     get_fuzzy_suggestions,
     search_by_product_names,
     search_by_unique_product_names,
     search_by_entities,
+    search_by_hs_codes,
     get_top_importers_by_product,
     get_top_importers_by_unique_product,
     get_top_suppliers_by_product,
@@ -80,6 +81,19 @@ def search_entities(request: EntitySearchRequest):
             raise HTTPException(status_code=400, detail="Entities cannot be empty")
         
         result = search_by_entities(request.entities, request.filters)
+        return result
+    except Exception as e:
+        raise HTTPException(status_code=500, detail=str(e))
+
+@app.post("/api/search/hs-codes")
+def search_hs_codes(request: HSCodeSearchRequest):
+    """Search by HS codes"""
+    try:
+        logger.info("API HIT: /api/search/hs-codes | hs_codes=%s | filters=%s", request.hs_codes, request.filters)
+        if not request.hs_codes:
+            raise HTTPException(status_code=400, detail="HS codes cannot be empty")
+        
+        result = search_by_hs_codes(request.hs_codes, request.filters)
         return result
     except Exception as e:
         raise HTTPException(status_code=500, detail=str(e))

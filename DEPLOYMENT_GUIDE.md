@@ -3,7 +3,7 @@
 ## ✅ What's Been Configured
 
 ### 1. **Live Backend Integration**
-- ✅ Frontend configured to use live backend API: `http://13.126.160.124:8000`
+- ✅ Frontend configured to use live backend API: `http://localhost:8000`
 - ✅ Production environment variables set in `.env` and `.env.production`
 - ✅ Build process updated to use live API
 - ✅ PM2 ecosystem configuration updated

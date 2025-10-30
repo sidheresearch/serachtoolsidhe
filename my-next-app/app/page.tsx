@@ -1,5 +1,5 @@
 'use client';
-import { useState } from 'react';
+import { useState, useRef } from 'react';
 import { 
   Container, 
   Paper, 
@@ -43,6 +43,7 @@ export default function Home() {
   const [productNames, setProductNames] = useState<string[]>([]);
   const [uniqueProductNames, setUniqueProductNames] = useState<string[]>([]);
   const [entities, setEntities] = useState<string[]>([]);
+  const [hsCodes, setHsCodes] = useState<string[]>([]);
   
   const [hsCode, setHsCode] = useState('');
   const [importerId, setImporterId] = useState('');
@@ -71,11 +72,14 @@ export default function Home() {
   const [showTopSuppliers, setShowTopSuppliers] = useState(false);
   const [loadingTopSuppliers, setLoadingTopSuppliers] = useState(false);
 
+  // Ref for scrolling to results
+  const resultsRef = useRef<HTMLDivElement>(null);
+
   const itemsPerPage = 10;
 
   const handlePrimarySearch = async () => {
     // Check if at least one primary field is filled
-    if (productNames.length === 0 && uniqueProductNames.length === 0 && entities.length === 0) {
+    if (productNames.length === 0 && uniqueProductNames.length === 0 && entities.length === 0 && hsCodes.length === 0) {
       setSearchError('Please select at least one item from the suggestions');
       return;
     }
@@ -107,6 +111,9 @@ export default function Home() {
       } else if (entities.length > 0) {
         results = await tradeAPI.searchEntities(entities, filters);
         setSuccessMessage(`Found ${results.count} records for the selected entities`);
+      } else if (hsCodes.length > 0) {
+        results = await tradeAPI.searchHSCodes(hsCodes, filters);
+        setSuccessMessage(`Found ${results.count} records for the selected HS codes`);
       } else {
         throw new Error('No search criteria provided');
       }
@@ -115,6 +122,17 @@ export default function Home() {
       setSearchResults(results);
       setHasData(true);
       setShowFilters(true);
+      
+      // Show success toast
+      setSuccessMessage('Results fetched successfully!');
+      
+      // Scroll to results after a short delay to ensure render
+      setTimeout(() => {
+        resultsRef.current?.scrollIntoView({ 
+          behavior: 'smooth', 
+          block: 'start' 
+        });
+      }, 300);
       
       // Auto-refresh top importers if they were already showing
       if (showTopImporters && (productNames.length > 0 || uniqueProductNames.length > 0)) {
@@ -141,6 +159,7 @@ export default function Home() {
     setProductNames([]);
     setUniqueProductNames([]);
     setEntities([]);
+    setHsCodes([]);
     setHsCode('');
     setImporterId('');
     setPortName('');
@@ -345,7 +364,7 @@ export default function Home() {
                     mb: 2,
                   }}
                 >
-                   Trade Analytics Tool
+                   Import Data Analytics Tool
                 </Typography>
                 <Typography 
                   variant="h6" 
@@ -522,6 +541,49 @@ export default function Home() {
                           }}
                         />
                       </Grid>
+
+                      <Grid item xs={12}>
+                        <AutocompleteInput
+                          label="Search by HS Code"
+                          placeholder="Type to search HS codes..."
+                          searchType="hs_code"
+                          value={hsCodes}
+                          onChange={setHsCodes}
+                          disabled={isLoading}
+                          icon={<QrCode sx={{ color: '#f59e0b' }} />}
+                          sx={{
+                            '& .MuiOutlinedInput-root': {
+                              borderRadius: '16px',
+                              minHeight: '72px',
+                              fontSize: '18px',
+                              minWidth: '100%',
+                              transition: 'all 0.3s ease',
+                              backgroundColor: 'rgba(245, 158, 11, 0.03)',
+                              border: '2px solid rgba(245, 158, 11, 0.1)',
+                              '&:hover': {
+                                backgroundColor: 'rgba(245, 158, 11, 0.08)',
+                                transform: 'translateY(-2px)',
+                                boxShadow: '0 8px 25px rgba(245, 158, 11, 0.15)',
+                                borderColor: 'rgba(245, 158, 11, 0.3)',
+                              },
+                              '&.Mui-focused': {
+                                backgroundColor: 'rgba(245, 158, 11, 0.08)',
+                                transform: 'translateY(-2px)',
+                                boxShadow: '0 8px 30px rgba(245, 158, 11, 0.25)',
+                                borderColor: '#f59e0b',
+                              },
+                            },
+                            '& .MuiInputLabel-root': {
+                              fontSize: '18px',
+                              fontWeight: 500,
+                            },
+                            '& .MuiAutocomplete-input': {
+                              fontSize: '18px',
+                              padding: '16px 8px',
+                            },
+                          }}
+                        />
+                      </Grid>
                     </Grid>
 
                     {/* Search Action Buttons */}
@@ -530,7 +592,7 @@ export default function Home() {
                         variant="contained"
                         size="large"
                         onClick={handlePrimarySearch}
-                        disabled={isLoading || (productNames.length === 0 && uniqueProductNames.length === 0 && entities.length === 0)}
+                        disabled={isLoading || (productNames.length === 0 && uniqueProductNames.length === 0 && entities.length === 0 && hsCodes.length === 0)}
                         sx={{
                           borderRadius: '16px',
                           px: 6,
@@ -981,6 +1043,39 @@ export default function Home() {
                             )}
                           </Grid>
                         </Box>
+
+                        {/* Advanced Filter Search Button */}
+                        <Box sx={{ mt: 5, display: 'flex', justifyContent: 'center' }}>
+                          <Button
+                            variant="contained"
+                            size="large"
+                            onClick={handlePrimarySearch}
+                            disabled={isLoading || (productNames.length === 0 && uniqueProductNames.length === 0 && entities.length === 0 && hsCodes.length === 0)}
+                            sx={{
+                              borderRadius: '16px',
+                              px: 6,
+                              py: 2,
+                              fontSize: '16px',
+                              fontWeight: 600,
+                              minWidth: '200px',
+                              background: 'linear-gradient(135deg, #10b981 0%, #059669 100%)',
+                              boxShadow: '0 8px 25px rgba(16, 185, 129, 0.3)',
+                              '&:hover': {
+                                background: 'linear-gradient(135deg, #059669 0%, #047857 100%)',
+                                transform: 'translateY(-3px)',
+                                boxShadow: '0 12px 35px rgba(16, 185, 129, 0.4)',
+                              },
+                              '&:disabled': {
+                                background: 'rgba(0, 0, 0, 0.12)',
+                                transform: 'none',
+                                boxShadow: 'none',
+                              }
+                            }}
+                            startIcon={isLoading ? <CircularProgress size={24} color="inherit" /> : <FilterList />}
+                          >
+                            {isLoading ? 'Applying Filters...' : 'Apply Filters'}
+                          </Button>
+                        </Box>
                       </Box>
                     </Fade>
                   )}
@@ -988,7 +1083,7 @@ export default function Home() {
                   {/* Results Section */}
                   {hasData && searchResults && (
                     <Fade in={hasData} timeout={800}>
-                      <Box sx={{ mt: 6 }}>
+                      <Box ref={resultsRef} sx={{ mt: 6 }}>
                         <Divider sx={{ mb: 4, borderColor: 'rgba(102, 126, 234, 0.1)', borderWidth: '1px' }} />
                         
                         <Paper
@@ -1739,6 +1834,28 @@ export default function Home() {
           </Fade>
         </Container>
       </Box>
+
+      {/* Success Toast */}
+      <Snackbar
+        open={!!successMessage}
+        autoHideDuration={3000}
+        onClose={() => setSuccessMessage(null)}
+        anchorOrigin={{ vertical: 'top', horizontal: 'center' }}
+      >
+        <Alert 
+          onClose={() => setSuccessMessage(null)} 
+          severity="success"
+          sx={{ 
+            width: '100%',
+            boxShadow: '0 8px 32px rgba(16, 185, 129, 0.3)',
+            borderRadius: '12px',
+            fontSize: '16px',
+            fontWeight: 600
+          }}
+        >
+          {successMessage}
+        </Alert>
+      </Snackbar>
     </LocalizationProvider>
   );
 }

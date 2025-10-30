@@ -23,3 +23,7 @@ class UniqueProductSearchRequest(BaseModel):
 class EntitySearchRequest(BaseModel):
     entities: List[str]
     filters: Optional[SearchFilters] = None
+
+class HSCodeSearchRequest(BaseModel):
+    hs_codes: List[str]
+    filters: Optional[SearchFilters] = None

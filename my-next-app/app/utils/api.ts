@@ -1,5 +1,5 @@
 // app/utils/api.ts
-const API_BASE_URL = 'http://13.126.160.124:8000';
+const API_BASE_URL = 'http://localhost:8000';
 
 export interface SuggestionResponse {
   suggestions: string[];
@@ -68,7 +68,7 @@ export const tradeAPI = {
   // Get fuzzy suggestions with debouncing support
   async getFuzzySuggestions(
     query: string, 
-    searchType: 'product_name' | 'unique_product_name' | 'entity', 
+    searchType: 'product_name' | 'unique_product_name' | 'entity' | 'hs_code', 
     limit: number = 10
   ): Promise<SuggestionResponse> {
     if (!query || query.length < 2) {
@@ -172,6 +172,34 @@ export const tradeAPI = {
     } catch (error) {
       console.error('Error searching entities:', error);
       throw new Error(error instanceof Error ? error.message : 'Failed to search entities');
+    }
+  },
+
+  // Search by HS codes
+  async searchHSCodes(hsCodes: string[], filters?: SearchFilters): Promise<SearchResponse> {
+    try {
+      const response = await fetch(`${API_BASE_URL}/api/search/hs-codes`, {
+        method: 'POST',
+        headers: { 
+          'Content-Type': 'application/json',
+          'Accept': 'application/json'
+        },
+        body: JSON.stringify({ 
+          hs_codes: hsCodes, 
+          filters: filters || {} 
+        })
+      });
+      
+      if (!response.ok) {
+        const errorData = await response.text();
+        throw new Error(`HTTP error! status: ${response.status}, message: ${errorData}`);
+      }
+      
+      const data = await response.json();
+      return data;
+    } catch (error) {
+      console.error('Error searching HS codes:', error);
+      throw new Error(error instanceof Error ? error.message : 'Failed to search HS codes');
     }
   },
 

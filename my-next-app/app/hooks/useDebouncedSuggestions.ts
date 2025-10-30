@@ -4,7 +4,7 @@ import { tradeAPI } from '../utils/api';
 
 interface UseDebouncedSuggestionsProps {
   query: string;
-  searchType: 'product_name' | 'unique_product_name' | 'entity';
+  searchType: 'product_name' | 'unique_product_name' | 'entity' | 'hs_code';
   delay?: number;
   minLength?: number;
 }

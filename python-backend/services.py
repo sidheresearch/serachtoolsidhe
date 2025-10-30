@@ -202,6 +202,7 @@ def fuzzy_match(query: str, choices: List[str], limit: int = 50, search_type: st
 _product_names_cache = None
 _unique_product_names_cache = None
 _entities_cache = None
+_hs_codes_cache = None
 
 def get_product_names():
     """Get all distinct product names with limited count for faster performance"""
@@ -275,6 +276,27 @@ def get_entities():
             _entities_cache = ["Sample Entity 1", "Sample Entity 2"]
     return _entities_cache
 
+def get_hs_codes():
+    """Get all distinct HS codes"""
+    global _hs_codes_cache
+    if _hs_codes_cache is None:
+        try:
+            engine = get_engine()
+            df = pd.read_sql(
+                "SELECT DISTINCT hs_code FROM analytics.product_icegate_imports_experiment WHERE hs_code IS NOT NULL ORDER BY hs_code",
+                engine
+            )
+            # Convert to string and remove empty values
+            _hs_codes_cache = [str(int(code)).strip() for code in df["hs_code"].tolist() if pd.notna(code) and code]
+            print(f"Loaded {len(_hs_codes_cache)} HS codes into cache")
+            print(f"Sample HS codes: {_hs_codes_cache[:10]}")
+        except Exception as e:
+            print(f"Error loading HS codes: {e}")
+            import traceback
+            traceback.print_exc()
+            _hs_codes_cache = ["12345678", "87654321"]
+    return _hs_codes_cache
+
 def get_fuzzy_suggestions(query: str, search_type: str, limit: int = 10) -> List[str]:
     """Get fuzzy suggestions based on search type"""
     try:
@@ -311,6 +333,37 @@ def get_fuzzy_suggestions(query: str, search_type: str, limit: int = 10) -> List
             results = fuzzy_match(query, choices, limit * 2, search_type)
             print(f"Debug: Fuzzy match returned {len(results)} results: {results}")
             return results[:limit]
+        
+        elif search_type == "hs_code":
+            choices = get_hs_codes()
+            print(f"Debug HS Code: Query='{query}', Total choices={len(choices)}")
+            print(f"Debug HS Code: First 10 choices: {choices[:10]}")
+            
+            # For HS codes, use simple prefix matching (numeric codes)
+            query_str = str(query).strip()
+            
+            # Exact and prefix matches
+            exact_matches = []
+            prefix_matches = []
+            contains_matches = []
+            
+            for choice in choices:
+                choice_str = str(choice).strip()
+                if choice_str == query_str:
+                    exact_matches.append(choice)
+                elif choice_str.startswith(query_str):
+                    prefix_matches.append(choice)
+                elif query_str in choice_str:
+                    contains_matches.append(choice)
+            
+            print(f"Debug HS Code: Exact={len(exact_matches)}, Prefix={len(prefix_matches)}, Contains={len(contains_matches)}")
+            print(f"Debug HS Code: Exact matches: {exact_matches[:5]}")
+            print(f"Debug HS Code: Prefix matches: {prefix_matches[:5]}")
+            
+            # Combine and return
+            all_results = exact_matches + prefix_matches + contains_matches
+            print(f"Debug HS Code: Returning {len(all_results[:limit])} results")
+            return all_results[:limit]
             
         else:
             return []
@@ -842,4 +895,45 @@ def get_top_suppliers_by_unique_product(unique_product_names: List[str], filters
             "search_type": "top_suppliers",
             "error": str(e),
             "products_searched": unique_product_names
+        }
+
+def search_by_hs_codes(hs_codes: List[str], filters: Optional[SearchFilters] = None) -> Dict[str, Any]:
+    """Search by HS codes - returns all columns"""
+    try:
+        engine = get_engine()
+        
+        # Select all columns
+        placeholders = ",".join([f":param_{i}" for i in range(len(hs_codes))])
+        base_query = f"""
+            SELECT system_id, reg_date, month_year, hs_code, chapter, unique_product_name, 
+                   quantity, unit_quantity, unit_price_usd, total_value_usd, importer_id, 
+                   true_importer_name, city, cha_number, type, true_supplier_name, 
+                   indian_port, foreign_port, exchange_rate_usd, duty, 
+                   product_name, supplier_name, supplier_address, target_date, id, importer
+            FROM analytics.product_icegate_imports_experiment 
+            WHERE hs_code IN ({placeholders})
+        """
+        
+        # Create parameters dictionary - convert to int
+        params = {f"param_{i}": int(code) for i, code in enumerate(hs_codes)}
+        
+        # Add filters to query and params
+        query, params = build_query_with_filters_dict(base_query, params, filters)
+        
+        # Execute query using text() for proper parameter binding
+        df = pd.read_sql(text(query), engine, params=params)
+        
+        return {
+            "data": df.to_dict('records'),
+            "count": len(df),
+            "search_type": "hs_code",
+            "total_records": len(df)
+        }
+    except Exception as e:
+        print(f"Error in search_by_hs_codes: {e}")
+        return {
+            "data": [{"hs_code": code, "error": "Database error", "sample": True} for code in hs_codes],
+            "count": len(hs_codes),
+            "search_type": "hs_code",
+            "error": str(e)
         }

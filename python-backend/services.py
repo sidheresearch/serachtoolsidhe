@@ -213,7 +213,7 @@ def get_product_names():
             # Limit to 10,000 most common products for faster performance
             df = pd.read_sql(
                 """SELECT DISTINCT product_name 
-                   FROM analytics.product_icegate_imports_experiment 
+                   FROM klj_analytics.product_icegate_imports 
                    WHERE product_name IS NOT NULL 
                    LIMIT 10000""",
                 engine
@@ -236,7 +236,7 @@ def get_unique_product_names():
         try:
             engine = get_engine()
             df = pd.read_sql(
-                "SELECT DISTINCT unique_product_name FROM analytics.product_icegate_imports_experiment WHERE unique_product_name IS NOT NULL",
+                "SELECT DISTINCT unique_product_name FROM klj_analytics.product_icegate_imports WHERE unique_product_name IS NOT NULL",
                 engine
             )
             _unique_product_names_cache = df["unique_product_name"].tolist()
@@ -254,13 +254,13 @@ def get_entities():
             engine = get_engine()
             # Get ALL importers (no limit)
             importer_df = pd.read_sql(
-                "SELECT DISTINCT true_importer_name FROM analytics.product_icegate_imports_experiment WHERE true_importer_name IS NOT NULL",
+                "SELECT DISTINCT true_importer_name FROM klj_analytics.product_icegate_imports WHERE true_importer_name IS NOT NULL",
                 engine
             )
             
             # Get ALL suppliers (no limit)
             supplier_df = pd.read_sql(
-                "SELECT DISTINCT true_supplier_name FROM analytics.product_icegate_imports_experiment WHERE true_supplier_name IS NOT NULL",
+                "SELECT DISTINCT true_supplier_name FROM klj_analytics.product_icegate_imports WHERE true_supplier_name IS NOT NULL",
                 engine
             )
             
@@ -283,7 +283,7 @@ def get_hs_codes():
         try:
             engine = get_engine()
             df = pd.read_sql(
-                "SELECT DISTINCT hs_code FROM analytics.product_icegate_imports_experiment WHERE hs_code IS NOT NULL ORDER BY hs_code",
+                "SELECT DISTINCT hs_code FROM klj_analytics.product_icegate_imports WHERE hs_code IS NOT NULL ORDER BY hs_code",
                 engine
             )
             # Convert to string and remove empty values
@@ -431,7 +431,7 @@ def search_by_product_names(product_names: List[str], filters: Optional[SearchFi
                    true_importer_name, city, cha_number, type, true_supplier_name, 
                    indian_port, foreign_port, exchange_rate_usd, duty, 
                    product_name, supplier_name, supplier_address, target_date, id, importer
-            FROM analytics.product_icegate_imports_experiment 
+            FROM klj_analytics.product_icegate_imports 
             WHERE product_name IN ({placeholders})
         """
         
@@ -473,7 +473,7 @@ def search_by_unique_product_names(unique_product_names, filters):
                    true_importer_name, city, cha_number, type, true_supplier_name, 
                    indian_port, foreign_port, exchange_rate_usd, duty, 
                    product_name, supplier_name, supplier_address, target_date, id, importer
-            FROM analytics.product_icegate_imports_experiment 
+            FROM klj_analytics.product_icegate_imports 
             WHERE unique_product_name IN ({placeholders})
         """
         
@@ -516,7 +516,7 @@ def search_by_entities(entities: List[str], filters: Optional[SearchFilters] = N
                    true_importer_name, city, cha_number, type, true_supplier_name, 
                    indian_port, foreign_port, exchange_rate_usd, duty, 
                    product_name, supplier_name, supplier_address, target_date, id, importer
-            FROM analytics.product_icegate_imports_experiment 
+            FROM klj_analytics.product_icegate_imports 
             WHERE (true_importer_name IN ({importer_placeholders}) 
             OR true_supplier_name IN ({supplier_placeholders}))
         """
@@ -568,7 +568,7 @@ def get_top_importers_by_product(product_names: List[str], filters: Optional[Sea
                 MAX(reg_date) as last_import_date,
                 COUNT(DISTINCT hs_code) as unique_hs_codes,
                 COUNT(DISTINCT origin_country) as unique_countries
-            FROM analytics.product_icegate_imports_experiment 
+            FROM klj_analytics.product_icegate_imports 
             WHERE product_name IN ({placeholders})
             AND true_importer_name IS NOT NULL
             AND total_value_usd IS NOT NULL
@@ -656,7 +656,7 @@ def get_top_importers_by_unique_product(unique_product_names: List[str], filters
                 MAX(reg_date) as last_import_date,
                 COUNT(DISTINCT hs_code) as unique_hs_codes,
                 COUNT(DISTINCT origin_country) as unique_countries
-            FROM analytics.product_icegate_imports_experiment 
+            FROM klj_analytics.product_icegate_imports 
             WHERE unique_product_name IN ({placeholders})
             AND true_importer_name IS NOT NULL
             AND total_value_usd IS NOT NULL
@@ -741,7 +741,7 @@ def get_top_suppliers_by_product(product_names: List[str], filters: Optional[Sea
                 MAX(reg_date) as last_export_date,
                 COUNT(DISTINCT hs_code) as unique_hs_codes,
                 COUNT(DISTINCT true_importer_name) as unique_importers
-            FROM analytics.product_icegate_imports_experiment 
+            FROM klj_analytics.product_icegate_imports 
             WHERE product_name IN ({placeholders})
             AND true_supplier_name IS NOT NULL
             AND total_value_usd IS NOT NULL
@@ -829,7 +829,7 @@ def get_top_suppliers_by_unique_product(unique_product_names: List[str], filters
                 MAX(reg_date) as last_export_date,
                 COUNT(DISTINCT hs_code) as unique_hs_codes,
                 COUNT(DISTINCT true_importer_name) as unique_importers
-            FROM analytics.product_icegate_imports_experiment 
+            FROM klj_analytics.product_icegate_imports 
             WHERE unique_product_name IN ({placeholders})
             AND true_supplier_name IS NOT NULL
             AND total_value_usd IS NOT NULL
@@ -910,7 +910,7 @@ def search_by_hs_codes(hs_codes: List[str], filters: Optional[SearchFilters] = N
                    true_importer_name, city, cha_number, type, true_supplier_name, 
                    indian_port, foreign_port, exchange_rate_usd, duty, 
                    product_name, supplier_name, supplier_address, target_date, id, importer
-            FROM analytics.product_icegate_imports_experiment 
+            FROM klj_analytics.product_icegate_imports 
             WHERE hs_code IN ({placeholders})
         """
         

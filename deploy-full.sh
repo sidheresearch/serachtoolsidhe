@@ -70,7 +70,7 @@ npm install
 
 # Build the application for production with live backend API
 echo "🔨 Building frontend for production with live API..."
-export NEXT_PUBLIC_API_URL=http://13.126.160.124:8000
+export NEXT_PUBLIC_API_URL=http://65.0.100.25:8000
 npm run build
 
 # Start frontend with PM2

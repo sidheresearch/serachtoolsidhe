@@ -72,7 +72,7 @@ npm install
 
 # Build for production
 echo "🔨 Building frontend..."
-export NEXT_PUBLIC_API_URL=http://13.126.160.124:8000
+export NEXT_PUBLIC_API_URL=http://65.0.100.25:8000
 npm run build
 
 # Create PM2 ecosystem config for Amazon Linux
@@ -86,7 +86,7 @@ module.exports = {
     env: {
       NODE_ENV: 'production',
       PORT: 3000,
-      NEXT_PUBLIC_API_URL: 'http://13.126.160.124:8000'
+      NEXT_PUBLIC_API_URL: 'http://65.0.100.25:8000'
     },
     log_file: '/home/ec2-user/logs/frontend.log',
     error_file: '/home/ec2-user/logs/frontend-error.log',

@@ -6,7 +6,7 @@ A comprehensive full-stack search application for trade analytics with live back
 
 - **Real-time Search**: Search for products, importers, exporters, and suppliers
 - **Advanced Analytics**: Top importers/suppliers analysis with charts
-- **Live Backend Integration**: Connected to production API at `http://13.126.160.124:8000`
+- **Live Backend Integration**: Connected to production API at `http://65.0.100.25:8000`
 - **Responsive Design**: Works on desktop and mobile devices
 - **Fast Performance**: Built with Next.js and optimized for production
 
@@ -60,7 +60,7 @@ chmod +x ~/deploy-full.sh
 ### API Integration
 The frontend automatically connects to the live backend API:
 - **Development**: `http://localhost:8000` (if running locally)
-- **Production**: `http://13.126.160.124:8000` (live backend)
+- **Production**: `http://65.0.100.25:8000` (live backend)
 
 ## 📚 API Endpoints
 

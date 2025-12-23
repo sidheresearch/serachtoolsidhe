@@ -2,7 +2,7 @@ module.exports = {
   apps: [{
     name: 'search-frontend',
     script: 'npm',
-    args: 'start',
+    args: 'start -- --hostname 0.0.0.0',
     cwd: '/home/ubuntu/serachtoolsidhe/my-next-app',
     env: {
       NODE_ENV: 'production',

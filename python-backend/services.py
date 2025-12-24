@@ -224,7 +224,9 @@ def get_product_names():
             print(f"Loaded {len(_product_names_cache)} unique product names into cache")
         except Exception as e:
             print(f"Error loading product names: {e}")
-            _product_names_cache = ["Sample Product 1", "Sample Product 2"]
+            import traceback
+            traceback.print_exc()
+            raise Exception(f"Failed to load product names from database: {str(e)}")
     return _product_names_cache
 
 def get_unique_product_names():
@@ -243,7 +245,10 @@ def get_unique_product_names():
             print(f"Loaded {len(_unique_product_names_cache)} unique product names into cache")
         except Exception as e:
             print(f"Error loading unique product names: {e}")
-            _unique_product_names_cache = ["Sample Unique Product 1", "Sample Unique Product 2"]
+            import traceback
+            traceback.print_exc()
+            # Raise exception instead of returning sample data to identify production issues
+            raise Exception(f"Failed to load unique product names from database: {str(e)}")
     return _unique_product_names_cache
 
 def get_entities():
@@ -273,7 +278,9 @@ def get_entities():
             print(f"Loaded {len(_entities_cache)} entities into cache")
         except Exception as e:
             print(f"Error loading entities: {e}")
-            _entities_cache = ["Sample Entity 1", "Sample Entity 2"]
+            import traceback
+            traceback.print_exc()
+            raise Exception(f"Failed to load entities from database: {str(e)}")
     return _entities_cache
 
 def get_hs_codes():
@@ -294,7 +301,7 @@ def get_hs_codes():
             print(f"Error loading HS codes: {e}")
             import traceback
             traceback.print_exc()
-            _hs_codes_cache = ["12345678", "87654321"]
+            raise Exception(f"Failed to load HS codes from database: {str(e)}")
     return _hs_codes_cache
 
 def get_fuzzy_suggestions(query: str, search_type: str, limit: int = 10) -> List[str]:

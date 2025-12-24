@@ -2,6 +2,7 @@
 from fastapi import FastAPI, HTTPException, Query
 from fastapi.middleware.cors import CORSMiddleware
 import logging
+import os
 from fastapi import FastAPI, HTTPException
 from models import ProductSearchRequest, UniqueProductSearchRequest, EntitySearchRequest, HSCodeSearchRequest
 from services import (
@@ -33,6 +34,35 @@ app.add_middleware(
 def root():
     return {"message": "Trade Analytics API", "status": "running"}
 
+@app.get("/health")
+def health_check():
+    """Health check endpoint with database connectivity status"""
+    from dotenv import load_dotenv
+    load_dotenv()
+    
+    database_url = os.getenv("DATABASE_URL")
+    status = {
+        "status": "healthy",
+        "api": "running",
+        "database_url_configured": bool(database_url),
+        "environment": os.getenv("ENVIRONMENT", "development")
+    }
+    
+    # Try to check database connection
+    try:
+        from services import get_engine
+        engine = get_engine()
+        with engine.connect() as conn:
+            from sqlalchemy import text
+            result = conn.execute(text("SELECT 1"))
+            status["database_connection"] = "connected"
+    except Exception as e:
+        status["database_connection"] = "failed"
+        status["database_error"] = str(e)
+        logger.error(f"Database connection failed: {e}")
+    
+    return status
+
 @app.get("/api/search/suggestions")
 def get_suggestions(
     query: str = Query(...),
@@ -41,14 +71,17 @@ def get_suggestions(
 ):
     """Get fuzzy search suggestions"""
     try:
+        logger.info(f"Suggestion request: query={query}, search_type={search_type}, limit={limit}")
         suggestions = get_fuzzy_suggestions(query, search_type, limit)
+        logger.info(f"Returning {len(suggestions)} suggestions")
         return {
             "suggestions": suggestions,
             "query": query,
             "search_type": search_type
         }
     except Exception as e:
-        raise HTTPException(status_code=500, detail=str(e))
+        logger.error(f"Error in get_suggestions: {str(e)}", exc_info=True)
+        raise HTTPException(status_code=500, detail=f"Failed to get suggestions: {str(e)}")
 
 @app.post("/api/search/products")
 def search_products(request: ProductSearchRequest):
